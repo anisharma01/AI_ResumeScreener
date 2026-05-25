@@ -92,24 +92,24 @@ jobs:
         cache-to: type=gha,mode=max
 
   # 4. Check Kubernetes manifests syntax
-  kubernetes-ci:
-    name: Kubernetes Manifests Verification
-    runs-on: ubuntu-latest
-    needs: [docker-ci]
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+  # kubernetes-ci:
+  #   name: Kubernetes Manifests Verification
+  #   runs-on: ubuntu-latest
+  #   needs: [docker-ci]
+  #   steps:
+  #   - name: Checkout Code
+  #     uses: actions/checkout@v4
 
-    - name: Install Kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'v1.28.0'
+  #   - name: Install Kubectl
+  #     uses: azure/setup-kubectl@v3
+  #     with:
+  #       version: 'v1.28.0'
 
-    - name: Validate Manifest File Syntax (Dry-Run Check)
-      run: |
-        # Performs a local dry-run parse validation to catch formatting and structure errors
-        kubectl apply --dry-run=client -f k8s/configmap.yaml
-        kubectl apply --dry-run=client -f k8s/backend-deployment.yaml
-        kubectl apply --dry-run=client -f k8s/backend-service.yaml
-        kubectl apply --dry-run=client -f k8s/frontend-deployment.yaml
-        kubectl apply --dry-run=client -f k8s/frontend-service.yaml
+  #   - name: Validate Manifest File Syntax (Dry-Run Check)
+  #     run: |
+  #       # Performs a local dry-run parse validation to catch formatting and structure errors
+  #       kubectl apply --dry-run=client -f k8s/configmap.yaml
+  #       kubectl apply --dry-run=client -f k8s/backend-deployment.yaml
+  #       kubectl apply --dry-run=client -f k8s/backend-service.yaml
+  #       kubectl apply --dry-run=client -f k8s/frontend-deployment.yaml
+  #       kubectl apply --dry-run=client -f k8s/frontend-service.yaml

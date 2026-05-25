@@ -1,3 +1,4 @@
+.gitignore
 # Secret environment configurations (NEVER push this to Git!)
 .env
 .env.local
