@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resume-screener-frontend
+  labels:
+    app: resume-screener
+    component: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: resume-screener
+      component: frontend
+  template:
+    metadata:
+      labels:
+        app: resume-screener
+        component: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: resume-screener-frontend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+        resources:
+          limits:
+            cpu: "0.5"
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        # Simple HTTP check to verify Nginx is responding on port 3000
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 10

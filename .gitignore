@@ -1,0 +1,42 @@
+# Secret environment configurations (NEVER push this to Git!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dependency directories
+node_modules/
+jspm_packages/
+web_drivers/
+venv/
+env/
+.venv/
+ENV/
+
+# Python caching & byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Frontend builds
+dist/
+build/
+.svelte-kit/
+.next/
+out/
+
+# System files & IDEs
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp

@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resume-screener-backend
+  labels:
+    app: resume-screener
+    component: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: resume-screener
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: resume-screener
+        component: backend
+    spec:
+      containers:
+      - name: backend
+        image: resume-screener-backend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        env:
+        # Load API key securely from a Kubernetes Secret
+        - name: GROQ_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: groq-api-key
+              key: api-key
+              optional: true # Graceful if not created yet
+        
+        # Resource requests and limits for good cluster behavior
+        resources:
+          limits:
+            cpu: "1"
+            memory: 512Mi
+          requests:
+            cpu: 250m
+            memory: 256Mi
+        
+        # Health probes
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
