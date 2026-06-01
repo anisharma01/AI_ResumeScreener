@@ -1,10 +1,10 @@
 import React from 'react';
-import { User, Mail, Phone, CheckCircle2, AlertCircle, FileText, Send, HelpCircle } from 'lucide-react';
+import { User, Mail, Phone, CheckCircle2, AlertCircle, FileText, Send } from 'lucide-react';
 
 export default function CandidateDetail({ candidate }) {
   if (!candidate) {
     return (
-      <div className="glass-panel p-6 border-slate-800 flex flex-col items-center justify-center text-center h-full min-h-96">
+      <div className="glass-panel p-6 border-slate-800 flex flex-col items-center justify-center text-center h-full min-h-96 bg-slate-900/30">
         <div className="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 mb-4 shadow-inner">
           <FileText className="w-8 h-8 opacity-40" />
         </div>
@@ -34,7 +34,7 @@ export default function CandidateDetail({ candidate }) {
   };
 
   return (
-    <div className="glass-panel p-6 border-slate-800 space-y-6 h-full flex flex-col justify-between">
+    <div className="glass-panel p-6 border-slate-800 space-y-6 h-full flex flex-col justify-between bg-slate-900/40">
       <div className="space-y-6">
         
         {/* Header Block */}
@@ -52,23 +52,33 @@ export default function CandidateDetail({ candidate }) {
           </div>
 
           <div className="flex flex-wrap gap-2.5">
-            {candidate.email && (
+            {candidate.email && candidate.email.toLowerCase() !== 'not available' ? (
               <a
                 href={`mailto:${candidate.email}`}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs bg-slate-900 border border-slate-800 hover:border-slate-700 hover:bg-slate-800 text-slate-300 transition-colors"
               >
-                <Mail className="w-3.5 h-3.5" />
+                <Mail className="w-3.5 h-3.5 text-indigo-450" />
                 {candidate.email}
               </a>
+            ) : (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs bg-slate-950 border border-slate-900 text-slate-500 select-none">
+                <Mail className="w-3.5 h-3.5 opacity-40" />
+                Email: Not Available
+              </div>
             )}
-            {candidate.phone && (
+            {candidate.phone && candidate.phone.toLowerCase() !== 'not available' ? (
               <a
                 href={`tel:${candidate.phone}`}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs bg-slate-900 border border-slate-800 hover:border-slate-700 hover:bg-slate-800 text-slate-300 transition-colors"
               >
-                <Phone className="w-3.5 h-3.5" />
+                <Phone className="w-3.5 h-3.5 text-indigo-455" />
                 {candidate.phone}
               </a>
+            ) : (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs bg-slate-950 border border-slate-900 text-slate-500 select-none">
+                <Phone className="w-3.5 h-3.5 opacity-40" />
+                Phone: Not Available
+              </div>
             )}
           </div>
         </div>
@@ -163,11 +173,11 @@ export default function CandidateDetail({ candidate }) {
         </div>
 
         <button
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-xs shadow-lg transition-all duration-200 cursor-pointer ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-xs shadow-lg transition-all duration-205 cursor-pointer ${
             candidate.recommended_role.toLowerCase() === 'interview'
-              ? 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-emerald-600/10 hover:brightness-110'
+              ? 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-emerald-600/10 hover:brightness-110 animate-gradient-wave'
               : candidate.recommended_role.toLowerCase() === 'shortlist'
-              ? 'bg-gradient-to-r from-amber-600 to-orange-500 text-white shadow-amber-600/10 hover:brightness-110'
+              ? 'bg-gradient-to-r from-amber-600 to-orange-500 text-white shadow-amber-600/10 hover:brightness-110 animate-gradient-wave'
               : 'bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-750'
           }`}
         >
