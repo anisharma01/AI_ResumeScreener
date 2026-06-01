@@ -1,0 +1,37 @@
+# Python environment/caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+ENV/
+env/
+
+# SQLite databases
+*.db
+users.db
+
+# Environment secret configurations
+.env
+.env.*
+!.env.example
+
+# Node/Frontend dependencies & builds
+node_modules/
+dist/
+.npm
+.eslintcache
+
+# IDEs and editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
