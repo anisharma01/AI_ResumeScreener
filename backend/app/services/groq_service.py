@@ -21,7 +21,6 @@ def get_groq_client() -> groq.Groq:
     """
     Retrieves the active global Groq client, performing lazy initialization if needed.
     """
-    global _client
     if _client is None:
         init_groq_client()
     return _client

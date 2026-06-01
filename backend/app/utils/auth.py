@@ -7,23 +7,43 @@ import datetime
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
+try:
+    import psycopg2
+except ImportError:
+    psycopg2 = None
+
 JWT_SECRET = os.getenv("JWT_SECRET", "rescore_super_secret_key_123456_secure_key")
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # 24 hours
 
-DB_PATH = "users.db"
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+def get_db_connection():
+    if DATABASE_URL and psycopg2:
+        return psycopg2.connect(DATABASE_URL)
+    return sqlite3.connect("users.db")
 
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            salt TEXT NOT NULL
-        )
-    """)
+    if DATABASE_URL and psycopg2:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(255) UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                salt TEXT NOT NULL
+            )
+        """)
+    else:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                salt TEXT NOT NULL
+            )
+        """)
     conn.commit()
     conn.close()
 
@@ -43,31 +63,39 @@ def register_user(username: str, password: str) -> bool:
     try:
         init_db()
         pwd_hash, salt = hash_password(password)
-        conn = sqlite3.connect(DB_PATH)
+        conn = get_db_connection()
         cursor = conn.cursor()
+        placeholder = "%s" if (DATABASE_URL and psycopg2) else "?"
         cursor.execute(
-            "INSERT INTO users (username, password_hash, salt) VALUES (?, ?, ?)",
+            f"INSERT INTO users (username, password_hash, salt) VALUES ({placeholder}, {placeholder}, {placeholder})",
             (username, pwd_hash, salt)
         )
         conn.commit()
         conn.close()
         return True
-    except sqlite3.IntegrityError:
+    except Exception:
         return False
 
 def authenticate_user(username: str, password: str) -> bool:
-    init_db()
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT password_hash, salt FROM users WHERE username = ?", (username,))
-    row = cursor.fetchone()
-    conn.close()
-    if not row:
+    try:
+        init_db()
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        placeholder = "%s" if (DATABASE_URL and psycopg2) else "?"
+        cursor.execute(
+            f"SELECT password_hash, salt FROM users WHERE username = {placeholder}",
+            (username,)
+        )
+        row = cursor.fetchone()
+        conn.close()
+        if not row:
+            return False
+        pwd_hash, salt_hex = row
+        salt = bytes.fromhex(salt_hex)
+        check_hash, _ = hash_password(password, salt)
+        return check_hash == pwd_hash
+    except Exception:
         return False
-    pwd_hash, salt_hex = row
-    salt = bytes.fromhex(salt_hex)
-    check_hash, _ = hash_password(password, salt)
-    return check_hash == pwd_hash
 
 def create_access_token(username: str) -> str:
     # Use UTC for datetime with compatibility
