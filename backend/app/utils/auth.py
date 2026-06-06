@@ -4,8 +4,11 @@ import secrets
 import jwt
 import sqlite3
 import datetime
+import logging
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+logger = logging.getLogger("app.utils.auth")
 
 try:
     import psycopg2
@@ -24,28 +27,32 @@ def get_db_connection():
     return sqlite3.connect("users.db")
 
 def init_db():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    if DATABASE_URL and psycopg2:
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                username VARCHAR(255) UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                salt TEXT NOT NULL
-            )
-        """)
-    else:
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                salt TEXT NOT NULL
-            )
-        """)
-    conn.commit()
-    conn.close()
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        if DATABASE_URL and psycopg2:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id SERIAL PRIMARY KEY,
+                    username VARCHAR(255) UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    salt TEXT NOT NULL
+                )
+            """)
+        else:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    salt TEXT NOT NULL
+                )
+            """)
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logger.error(f"Database initialization failed: {str(e)}", exc_info=True)
+        raise e
 
 # Hash a password using PBKDF2-HMAC-SHA256
 def hash_password(password: str, salt: bytes = None) -> tuple[str, str]:
@@ -73,8 +80,14 @@ def register_user(username: str, password: str) -> bool:
         conn.commit()
         conn.close()
         return True
-    except Exception:
-        return False
+    except Exception as e:
+        logger.error(f"Registration error for user '{username}': {str(e)}", exc_info=True)
+        err_msg = str(e).lower()
+        # If it is a true unique constraint violation, return False so routes.py shows "already exists"
+        if "unique" in err_msg or "already exists" in err_msg or "duplicate key" in err_msg:
+            return False
+        # Otherwise, let the database connection or syntax exception propagate so it causes a 500 error and is visible
+        raise e
 
 def authenticate_user(username: str, password: str) -> bool:
     try:
@@ -94,8 +107,9 @@ def authenticate_user(username: str, password: str) -> bool:
         salt = bytes.fromhex(salt_hex)
         check_hash, _ = hash_password(password, salt)
         return check_hash == pwd_hash
-    except Exception:
-        return False
+    except Exception as e:
+        logger.error(f"Authentication error for user '{username}': {str(e)}", exc_info=True)
+        raise e
 
 def create_access_token(username: str) -> str:
     # Use UTC for datetime with compatibility
