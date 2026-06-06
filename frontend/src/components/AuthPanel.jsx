@@ -37,8 +37,9 @@ export default function AuthPanel({ onLoginSuccess }) {
       password: password
     };
 
+    const API_BASE = import.meta.env.VITE_API_BASE || '';
     try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      const endpoint = `${API_BASE}${isLogin ? '/api/auth/login' : '/api/auth/register'}`;
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
