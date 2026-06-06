@@ -24,8 +24,8 @@ export default function App() {
   const [token, setToken] = useState(localStorage.getItem('rescore_access_token') || '');
   const [username, setUsername] = useState(localStorage.getItem('rescore_username') || '');
 
-  // Unified reverse proxy API base
-  const API_BASE = '';
+  // Read API base URL from environment variables, falling back to relative paths for Nginx/dev proxy
+  const API_BASE = import.meta.env.VITE_API_BASE || '';
 
   // Check health and connectivity of FastAPI backend on mount
   useEffect(() => {
