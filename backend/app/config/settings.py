@@ -8,7 +8,7 @@ GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 # ALLOWED_ORIGINS should be a comma-separated list in env: e.g. "https://myfrontend.com,http://localhost:3000"
 allowed_origins_raw = os.getenv("ALLOWED_ORIGINS", "")
 ALLOWED_ORIGINS = [
-    origin.strip() 
+    origin.strip().rstrip("/") 
     for origin in allowed_origins_raw.split(",") 
     if origin.strip()
 ]
